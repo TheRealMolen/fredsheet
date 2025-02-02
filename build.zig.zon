@@ -1,0 +1,16 @@
+.{
+    .name = "fredsheet",
+    .version = "0.0.1",
+    .minimum_zig_version = "0.14.0",
+    .dependencies = .{
+        .raylib = .{
+            .url = "https://github.com/raysan5/raylib/archive/75b6b825dfc93488bc411c00845164b5c0f8fae6.zip",
+            .hash = "1220cf98ad05d672d1342510ae77b35ee5e222cde2c5134a14774d7cb35409283c44",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
