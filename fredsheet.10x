@@ -8,17 +8,6 @@
 		<ShowEmptyFolders>true</ShowEmptyFolders>
 		<IncludeFilesWithoutExt>false</IncludeFilesWithoutExt>
 		<IsFolder>false</IsFolder>
-		<BuildCommand>zig build install</BuildCommand>
-		<RebuildCommand></RebuildCommand>
-		<BuildFileCommand></BuildFileCommand>
-		<CleanCommand></CleanCommand>
-		<BuildWorkingDirectory></BuildWorkingDirectory>
-		<CancelBuild></CancelBuild>
-		<Exe>zig-out\bin\fred.exe</Exe>
-		<Args></Args>
-		<WorkingDirectory></WorkingDirectory>
-		<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
-		<DebugSln></DebugSln>
 		<UseVisualStudioEnvBat>false</UseVisualStudioEnvBat>
 		<CaptureExeOutput>true</CaptureExeOutput>
 		<Configurations>
@@ -30,8 +19,9 @@
 			<Platform>Win32</Platform>
 		</Platforms>
 		<AdditionalIncludePaths>
+			<AdditionalIncludePath>C:\bin\lib\include</AdditionalIncludePath>
+			<AdditionalIncludePath>C:\bin\lib\libcxx\include</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\ATLMFC\include</AdditionalIncludePath>
-			<AdditionalIncludePath>C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\NETFXSDK\4.8\include\um</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\ucrt</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\shared</AdditionalIncludePath>
@@ -39,10 +29,71 @@
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\winrt</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.22000.0\cppwinrt</AdditionalIncludePath>
 		</AdditionalIncludePaths>
-		<Defines></Defines>
+		<Defines>
+			<Define>__cplusplus=202302L</Define>
+		</Defines>
 		<ConfigProperties>
 			<ConfigAndPlatform>
+				<Name>Debug:Win32</Name>
+				<BuildCommand>zig build install</BuildCommand>
+				<RebuildCommand></RebuildCommand>
+				<BuildFileCommand></BuildFileCommand>
+				<CleanCommand></CleanCommand>
+				<BuildWorkingDirectory></BuildWorkingDirectory>
+				<CancelBuild></CancelBuild>
+				<Exe>zig-out\bin\fred.exe</Exe>
+				<Args></Args>
+				<WorkingDirectory></WorkingDirectory>
+				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebugSln></DebugSln>
+				<Defines></Defines>
+				<ForceIncludes></ForceIncludes>
+			</ConfigAndPlatform>
+			<ConfigAndPlatform>
 				<Name>Debug:x64</Name>
+				<BuildCommand>zig build install --verbose</BuildCommand>
+				<RebuildCommand></RebuildCommand>
+				<BuildFileCommand></BuildFileCommand>
+				<CleanCommand></CleanCommand>
+				<BuildWorkingDirectory></BuildWorkingDirectory>
+				<CancelBuild></CancelBuild>
+				<Exe>zig-out\bin\fred.exe</Exe>
+				<Args></Args>
+				<WorkingDirectory></WorkingDirectory>
+				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebugSln></DebugSln>
+				<Defines></Defines>
+				<ForceIncludes></ForceIncludes>
+			</ConfigAndPlatform>
+			<ConfigAndPlatform>
+				<Name>Release:Win32</Name>
+				<BuildCommand>zig build install</BuildCommand>
+				<RebuildCommand></RebuildCommand>
+				<BuildFileCommand></BuildFileCommand>
+				<CleanCommand></CleanCommand>
+				<BuildWorkingDirectory></BuildWorkingDirectory>
+				<CancelBuild></CancelBuild>
+				<Exe>zig-out\bin\fred.exe</Exe>
+				<Args></Args>
+				<WorkingDirectory></WorkingDirectory>
+				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebugSln></DebugSln>
+				<Defines></Defines>
+				<ForceIncludes></ForceIncludes>
+			</ConfigAndPlatform>
+			<ConfigAndPlatform>
+				<Name>Release:x64</Name>
+				<BuildCommand>zig build install</BuildCommand>
+				<RebuildCommand></RebuildCommand>
+				<BuildFileCommand></BuildFileCommand>
+				<CleanCommand></CleanCommand>
+				<BuildWorkingDirectory></BuildWorkingDirectory>
+				<CancelBuild></CancelBuild>
+				<Exe>zig-out\bin\fred.exe</Exe>
+				<Args></Args>
+				<WorkingDirectory></WorkingDirectory>
+				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebugSln></DebugSln>
 				<Defines></Defines>
 				<ForceIncludes></ForceIncludes>
 			</ConfigAndPlatform>

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <numeric>
 #include <span>
@@ -75,16 +76,28 @@ namespace ui
     }
 
 
+    using ControlPtr = std::shared_ptr<struct ControlState>;
+    using ControlHandlerPtr = std::shared_ptr<struct ControlHandler>;
+
+    struct ControlHandler
+    {
+        using EventHandler = std::function<void(const ControlPtr& ctrlP)>;
+
+        EventHandler OnClick;
+        EventHandler OnMenu;
+    };
+
+
     struct ControlStyle
     {
         u8 DrawBg : 1 = 1;
 
         Color NormalBg = Color { 100, 100, 98, 255 };
-        Color HoverBg = LIGHTGRAY;
+        Color HoverBg = Color { 120, 120, 117, 255 };
         Color SelectedBg = GRAY;
 
         Color NormalFg = WHITE;
-        Color HoverFg = DARKGRAY;
+        Color HoverFg = WHITE;
         Color SelectedFg = YELLOW;
 
         int TextSize = kUiFontSize;
@@ -95,12 +108,14 @@ namespace ui
     const ControlStyle kNullControlStyle = { .DrawBg = 0 };
 
 
-    using ControlPtr = std::shared_ptr<struct ControlState>;
     struct ControlState
     {
         std::string Text;
         const ControlStyle* Style = &kNullControlStyle;
 
+        ControlHandlerPtr Handlers;
+
+        ControlPtr Parent;
         std::vector<ControlPtr> Children;
 
         Vector2 MinDesiredSize { 0.f, 0.f };
@@ -164,10 +179,23 @@ namespace ui
         ctrl.DesiredSizeDirty = false;
     }
 
+    void UpdateDesiredSizes(std::span<ControlPtr> children)
+    {
+        for (ControlPtr& ctrlP : children)
+        {
+            ControlState* ctrl = ctrlP.get();
+            if (!ctrl)
+                throw std::invalid_argument("null control in UpdateDesiredSizes");
+
+            if (ctrl->DesiredSizeDirty)
+                UpdateDesiredSize(*ctrl);
+        }
+    }
+
 
     struct Layout_HorizBox_Params
     {
-        int Padding = 1;
+        float Padding = 1;
         bool Shrink = true;     // if shrink is true, controls will be scaled down so they don't exceed the available space
         bool Expand = false;    // if expand is true, controls will be scaled up so they completely fill the available space
     };
@@ -175,15 +203,7 @@ namespace ui
     void Layout_HorizBox(const Rectangle& parent, std::span<ControlPtr> children, const Layout_HorizBox_Params& params)
     {
         // refresh any out of date desired sizes
-        for (ControlPtr& ctrlP : children)
-        {
-            ControlState* ctrl = ctrlP.get();
-            if (!ctrl)
-                throw std::invalid_argument("null control in Layout_HorizBox");
-
-            if (ctrl->DesiredSizeDirty)
-                UpdateDesiredSize(*ctrl);
-        }
+        UpdateDesiredSizes(children);
 
         const float minTotalChildWidth = std::accumulate(begin(children), end(children), 0.f, [](float acc, const auto& ctrlP) { return (acc + ctrlP->MinDesiredSize.x); });
         const int numChildren = isize(children);
@@ -210,6 +230,7 @@ namespace ui
         for (ControlPtr& ctrlP : children)
         {
             ControlState* ctrl = ctrlP.get();
+            assert(ctrl);
             ctrl->Rect.y = parent.y;
             ctrl->Rect.height = parent.height;
 
@@ -224,21 +245,85 @@ namespace ui
             intX = roundf(trueX);
         }
     }
+
+
+    using Layout_VertBox_Params = Layout_HorizBox_Params;
+
+    void Layout_VertBox(const Rectangle& parent, std::span<ControlPtr> children, const Layout_HorizBox_Params& params)
+    {
+        // refresh any out of date desired sizes
+        UpdateDesiredSizes(children);
+
+        const float minTotalChildHeight = std::accumulate(begin(children), end(children), 0.f, [](float acc, const auto& ctrlP) { return (acc + ctrlP->MinDesiredSize.y); });
+        const int numChildren = isize(children);
+        const float totalPadding = params.Padding * (numChildren + 1);
+
+        const float availHeight = parent.height;
+        
+        const bool everythingFits = (minTotalChildHeight + totalPadding) <= availHeight;
+        float scale = 1.f;
+        if (everythingFits || !params.Shrink)
+        {
+            if (everythingFits && params.Expand)
+            {
+                scale = (availHeight - totalPadding) / minTotalChildHeight;
+            }
+        }
+        else
+        {
+            scale = (availHeight - totalPadding) / minTotalChildHeight;
+        }
+
+        float trueY = parent.y + params.Padding;
+        float intY = roundf(trueY);
+        for (ControlPtr& ctrlP : children)
+        {
+            ControlState* ctrl = ctrlP.get();
+            assert(ctrl);
+            ctrl->Rect.x = parent.x;
+            ctrl->Rect.width = parent.width;
+
+            ctrl->Rect.y = intY;
+
+            const float height = ctrl->MinDesiredSize.y * scale;
+            trueY += height;
+            intY = roundf(trueY);
+            ctrl->Rect.height = intY - ctrl->Rect.y;
+
+            trueY += params.Padding;
+            intY = roundf(trueY);
+        }
+    }
 };
 
 
 
 static std::vector<ui::ControlPtr> gControls;
 static int gHoveredCtrlIx = -1;
+constexpr bool gOnlyRepaintWhenDirty = false;
+static bool gNeedRepaint = true;
 
 
 
 void initWindow()
 {
+    ui::ControlHandlerPtr handler = make_shared<ui::ControlHandler>();
+    handler->OnClick = [](const ui::ControlPtr& ctrlP)
+    {
+        ui::ControlState* ctrl = ctrlP.get();
+        assert(ctrl);
+
+        ctrl->Text = "CLICKED";
+        ctrl->DesiredSizeDirty = 1;
+        
+        ui::Layout_HorizBox(Rectangle { 0, 200, 1600, 32 }, gControls, { .Padding=2, .Expand=true });
+    };
+
     for (int i = 0; i < 12; ++i)
     {
         ui::ControlPtr ctrl = make_shared<ui::ControlState>();
         ctrl->Style = &ui::kDefaultControlStyle;
+        ctrl->Handlers = handler;
 
         for (int n = 0; n <= i; ++n)
             ctrl->Text += 'x';
@@ -246,13 +331,17 @@ void initWindow()
         gControls.push_back(ctrl);
     }
     ui::Layout_HorizBox(Rectangle { 0, 200, 1600, 32 }, gControls, { .Padding=2, .Expand=true });
+    //ui::Layout_VertBox(Rectangle { 100, 0, 200, 1024 }, gControls, { .Padding=2, .Expand=false });
 }
+
+
 
 void updateHoveredCtrl(const Vector2& inputPos)
 {
     if (gHoveredCtrlIx >= 0)
     {
         ui::ControlState* ctrl = gControls[gHoveredCtrlIx].get();
+        assert(ctrl);
         if (IsPointInside(inputPos, ctrl->Rect))
             return;
 
@@ -270,6 +359,23 @@ void updateHoveredCtrl(const Vector2& inputPos)
         gHoveredCtrlIx = i;
         ctrl->IsHovered = 1;
         break;
+    }
+
+    gNeedRepaint = true;
+}
+
+void tryDispatchMouseClick()
+{
+    if (gHoveredCtrlIx < 0)
+        return;
+    
+    ui::ControlPtr ctrlP = gControls[gHoveredCtrlIx];
+    assert(ctrlP.get());
+
+    ui::ControlHandlerPtr handlerP = ctrlP->Handlers;
+    if (handlerP.get())
+    {
+        handlerP->OnClick(ctrlP);
     }
 }
 
@@ -324,12 +430,26 @@ int main(int argc, const char** argv)
     {
         updateHoveredCtrl(GetMousePosition());
 
+        if (IsMouseButtonReleased(0))
+        {
+            tryDispatchMouseClick();
+        }
 
-        BeginDrawing();
+        if (!gOnlyRepaintWhenDirty || gNeedRepaint)
+        {
+            gNeedRepaint = false;
 
-        render();
+            BeginDrawing();
 
-        EndDrawing();
+            render();
+
+            EndDrawing();
+        }
+        else
+        {
+            WaitTime(0.05);
+            PollInputEvents();
+        }
     }
 
     CloseWindow();
