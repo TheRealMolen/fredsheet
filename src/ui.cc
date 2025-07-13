@@ -9,6 +9,11 @@ namespace ui
 {
     Font g_fredFont;
 
+    const ControlStyle kDefaultControlStyle;
+    const ControlStyle kNullControlStyle = { .DrawBg = 0 };
+    
+    ControlPtr g_rootControl;
+
 
     void LoadUIFont()
     {
@@ -23,6 +28,38 @@ namespace ui
     {
         DrawTextEx(g_fredFont, textUtf8, Vector2{ x, y }, kUiFontSize, 0.f, col);
     }
+
+
+    ControlPtr CreateRootControl(int width, int height)
+    {
+        FRASSERT(!g_rootControl.get());
+
+        ui::ControlPtr ctrl = make_shared<ui::ControlState>();
+        ctrl->Rect = { 0.f, 0.f, float(width), float(height) };
+
+        g_rootControl = ctrl;
+
+        return ctrl;
+    }
+
+    const ControlPtr& GetRootControl()
+    {
+        return g_rootControl;
+    }
+
+
+    void AddChild(const ControlPtr& parentCtrlP, const ControlPtr& childCtrlP)
+    {
+        FRASSERT(parentCtrlP.get());
+        FRASSERT(childCtrlP.get());
+
+        // TODO
+        FRASSERT(!childCtrlP->Parent.get());
+
+        childCtrlP->Parent = parentCtrlP;
+        parentCtrlP->Children.push_back(childCtrlP);
+    }
+
 
 
     Vector2 CalcMinDesiredSize(const ControlState& ctrl)

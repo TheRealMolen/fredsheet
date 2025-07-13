@@ -14,25 +14,36 @@
 #include "ui.h"
 
 
-static std::vector<ui::ControlPtr> gControls;
-static int gHoveredCtrlIx = -1;
+static ui::ControlPtr gHoveredCtrl;
 constexpr bool gOnlyRepaintWhenDirty = false;
 static bool gNeedRepaint = true;
 
 
 
-void initWindow()
+void createControls(ui::ControlPtr& parent)
 {
+    FRASSERT(parent.get());
+    
+    auto refreshChildrenLayout = [](ui::ControlPtr& parent)
+    {
+        ui::ControlState* parentCtrl = parent.get();
+        if (!parentCtrl)
+            return;
+
+        ui::Layout_HorizBox(Rectangle { 0, 200, parentCtrl->Rect.width, 32 }, parentCtrl->Children, { .Padding = 2, .Expand = true });
+        //ui::Layout_VertBox(Rectangle { 100, 0, 200, parentCtrl->Rect.height }, parentCtrl->Children, { .Padding=2, .Expand=false });
+    };
+
     ui::ControlHandlerPtr handler = make_shared<ui::ControlHandler>();
-    handler->OnClick = [](const ui::ControlPtr& ctrlP)
+    handler->OnClick = [&refreshChildrenLayout](const ui::ControlPtr& ctrlP)
     {
         ui::ControlState* ctrl = ctrlP.get();
-        assert(ctrl);
+        FRASSERT(ctrl);
 
         ctrl->Text = "CLICKED";
         ctrl->DesiredSizeDirty = 1;
-        
-        ui::Layout_HorizBox(Rectangle { 0, 200, 1600, 32 }, gControls, { .Padding=2, .Expand=true });
+
+        refreshChildrenLayout(ctrl->Parent);
     };
 
     for (int i = 0; i < 12; ++i)
@@ -44,35 +55,36 @@ void initWindow()
         for (int n = 0; n <= i; ++n)
             ctrl->Text += 'x';
 
-        gControls.push_back(ctrl);
+        ui::AddChild(parent, ctrl);
     }
-    ui::Layout_HorizBox(Rectangle { 0, 200, 1600, 32 }, gControls, { .Padding=2, .Expand=true });
-    //ui::Layout_VertBox(Rectangle { 100, 0, 200, 1024 }, gControls, { .Padding=2, .Expand=false });
+
+    refreshChildrenLayout(parent);
 }
 
 
 
 void updateHoveredCtrl(const Vector2& inputPos)
 {
-    if (gHoveredCtrlIx >= 0)
+    if (gHoveredCtrl.get())
     {
-        ui::ControlState* ctrl = gControls[gHoveredCtrlIx].get();
-        assert(ctrl);
+        ui::ControlState* ctrl = gHoveredCtrl.get();
         if (IsPointInside(inputPos, ctrl->Rect))
             return;
 
-        gHoveredCtrlIx = -1;
+        gHoveredCtrl.reset();
         ctrl->IsHovered = 0;
     }
+    
+    ui::ControlPtr rootCtrl = ui::GetRootControl();
+    FRASSERT(rootCtrl.get());
 
-    auto itCtrl = begin(gControls);
-    for (int i = 0; i < isize(gControls); ++i, ++itCtrl)
+    for (const ui::ControlPtr& ctrlP : rootCtrl->Children)
     {
-        ui::ControlState* ctrl = itCtrl->get();
+        ui::ControlState* ctrl = ctrlP.get();
         if (!IsPointInside(inputPos, ctrl->Rect))
             continue;
 
-        gHoveredCtrlIx = i;
+        gHoveredCtrl = ctrlP;
         ctrl->IsHovered = 1;
         break;
     }
@@ -82,49 +94,59 @@ void updateHoveredCtrl(const Vector2& inputPos)
 
 void tryDispatchMouseClick()
 {
-    if (gHoveredCtrlIx < 0)
+    if (!gHoveredCtrl.get())
         return;
-    
-    ui::ControlPtr ctrlP = gControls[gHoveredCtrlIx];
-    assert(ctrlP.get());
 
-    ui::ControlHandlerPtr handlerP = ctrlP->Handlers;
+    ui::ControlHandlerPtr handlerP = gHoveredCtrl->Handlers;
     if (handlerP.get())
     {
-        handlerP->OnClick(ctrlP);
+        handlerP->OnClick(gHoveredCtrl);
+    }
+}
+
+
+void RenderControl(const ui::ControlPtr& ctrlP)
+{
+    const ui::ControlState* ctrl = ctrlP.get();
+    if (!ctrl)
+        throw std::invalid_argument("null control in render");
+
+    if (ctrl->Style && ctrl->Style->DrawBg)
+    {
+        const Color bgCol = ui::GetBgColor(*ctrl);
+        DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, bgCol);
+    }
+
+    if (!ctrl->Text.empty())
+    {
+        Vector2 cursor = { ctrl->Rect.x, ctrl->Rect.y };
+        if (ctrl->Style)
+        {
+            const Cardinals& pad = ctrl->Style->Padding;
+            cursor.x += pad.e;
+            cursor.y += pad.n;
+        }
+
+        const Color fgCol = ui::GetFgColor(*ctrl);
+        DrawTextEx(ui::g_fredFont, ctrl->Text.c_str(), cursor, ui::kUiFontSize, 0.f, fgCol);
     }
 }
 
 
 void render()
 {
-    ClearBackground(DARKGRAY);
-
-    for (const ui::ControlPtr& ctrlP : gControls)
+    const ui::ControlState* rootCtrl = ui::GetRootControl().get();
+    if (!rootCtrl)
     {
-        const ui::ControlState* ctrl = ctrlP.get();
-        if (!ctrl)
-            throw std::invalid_argument("null control in render");
+        ClearBackground(WHITE);
+        return;
+    }
 
-        if (ctrl->Style && ctrl->Style->DrawBg)
-        {
-            const Color bgCol = ui::GetBgColor(*ctrl);
-            DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, bgCol);
-        }
+    ClearBackground(rootCtrl->Style->NormalBg);
 
-        if (!ctrl->Text.empty())
-        {
-            Vector2 cursor = { ctrl->Rect.x, ctrl->Rect.y };
-            if (ctrl->Style)
-            {
-                const Cardinals pad = ctrl->Style->Padding;
-                cursor.x += pad.e;
-                cursor.y += pad.n;
-            }
-
-            const Color fgCol = ui::GetFgColor(*ctrl);
-            DrawTextEx(ui::g_fredFont, ctrl->Text.c_str(), cursor, ui::kUiFontSize, 0.f, fgCol);
-        }
+    for (const ui::ControlPtr& ctrlP : rootCtrl->Children)
+    {
+        RenderControl(ctrlP);
     }
 }
 
@@ -136,8 +158,12 @@ int main(int argc, const char** argv)
 
     InitWindow(screenWidth, screenHeight, "fredsheet");
     ui::LoadUIFont();
+    
+    const ui::ControlStyle kRootControlStyle = { .NormalBg = DARKGRAY };
+    ui::ControlPtr rootCtrl = ui::CreateRootControl(screenWidth, screenHeight);
+    rootCtrl->Style = &kRootControlStyle;
 
-    initWindow();
+    createControls(rootCtrl);
 
 
     SetTargetFPS(30);

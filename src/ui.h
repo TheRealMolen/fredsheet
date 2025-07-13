@@ -11,8 +11,16 @@
 
 namespace ui
 {
+    using ControlPtr = std::shared_ptr<struct ControlState>;
+    using ControlHandlerPtr = std::shared_ptr<struct ControlHandler>;
+
     constexpr int kUiFontSize = 24;
     extern Font g_fredFont;
+
+
+    ControlPtr CreateRootControl(int width, int height);
+    const ControlPtr& GetRootControl();
+
 
 
     void LoadUIFont();
@@ -20,9 +28,6 @@ namespace ui
     void DrawUIText(const char* textUtf8, const Vector2& pos, const Color& col);
     void DrawUIText(const char* textUtf8, float x, float y, const Color& col);
 
-
-    using ControlPtr = std::shared_ptr<struct ControlState>;
-    using ControlHandlerPtr = std::shared_ptr<struct ControlHandler>;
 
     struct ControlHandler
     {
@@ -49,8 +54,8 @@ namespace ui
 
         Cardinals Padding { 8.f };
     };
-    const ControlStyle kDefaultControlStyle;
-    const ControlStyle kNullControlStyle = { .DrawBg = 0 };
+    extern const ControlStyle kDefaultControlStyle;
+    extern const ControlStyle kNullControlStyle;
 
 
     struct ControlState
@@ -74,6 +79,9 @@ namespace ui
         Rectangle Rect { 0, 0, 100, 100 };
     };
     
+
+    void AddChild(const ControlPtr& parentCtrlP, const ControlPtr& childCtrlP);
+
     inline Color GetBgColor(const ControlState& ctrl);
     inline Color GetFgColor(const ControlState& ctrl);
 
