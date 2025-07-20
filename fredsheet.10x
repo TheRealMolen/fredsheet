@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <N10X>
 	<Workspace>
-		<IncludeFilter>*.c,*.cc,*.cpp,*.c++,*.cp,*.cxx,*.h,*.hh,*.hpp,*.h++,*.hp,*.hxx,*.inl,*.cs,*.rs,*.java,*.jav,*.js,*.jsc,*.jsx,*.json,*.cls,*.py,*.rpy,*.php,*.php3,*.phl,*.phtml,*.rhtml,*.tpl,*.phps,*.lua,*.html,*.html5,*.htm,*.xml,*.xaml,*.css,*.ssi,*.haml,*.yaml,*.bat,*.wbf,*.wbt,*.txt,*.cmake,*.make,*.makefile,*.mak,*.mk,*.sh,*.bash,*.csv,*.asp,*.pl,*.mac,*.ws,*.vbs,*.perl,*.src,*.rss,*.inc,*.f,*.go,*.prl,*.plx,*.rb,*.lsp,*.lpx,*.ps1,*.command,*.cbl,*.cob,*.qs,*.wxs,*.ph,*.msc,*.glsl,*.hlsl,*.fx,*.vert,*.tesc,*.tese,*.geom,*.frag,*.comp,*.pssl,*.scons,*.cu,*.jai,*.zig,*.md,</IncludeFilter>
+		<IncludeFilter>*.c,*.cc,*.cpp,*.c++,*.cp,*.cxx,*.h,*.hh,*.hpp,*.h++,*.hp,*.hxx,*.inl,*.cs,*.rs,*.java,*.jav,*.js,*.jsc,*.jsx,*.json,*.cls,*.py,*.rpy,*.php,*.php3,*.phl,*.phtml,*.rhtml,*.tpl,*.phps,*.lua,*.html,*.html5,*.htm,*.xml,*.xaml,*.css,*.ssi,*.haml,*.yaml,*.bat,*.wbf,*.wbt,*.txt,*.cmake,*.make,*.makefile,*.mak,*.mk,*.sh,*.bash,*.csv,*.asp,*.pl,*.mac,*.ws,*.vbs,*.perl,*.src,*.rss,*.inc,*.f,*.go,*.prl,*.plx,*.rb,*.lsp,*.lpx,*.ps1,*.command,*.cbl,*.cob,*.qs,*.wxs,*.ph,*.msc,*.glsl,*.hlsl,*.fx,*.vert,*.tesc,*.tese,*.geom,*.frag,*.comp,*.pssl,*.scons,*.cu,*.jai,*.zig,*.md,*.zig.zon,</IncludeFilter>
 		<ExcludeFilter></ExcludeFilter>
 		<SyncFiles>true</SyncFiles>
 		<Recursive>true</Recursive>
@@ -45,6 +45,7 @@
 				<Args></Args>
 				<WorkingDirectory></WorkingDirectory>
 				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebuggerExe></DebuggerExe>
 				<DebugSln></DebugSln>
 				<Defines></Defines>
 				<ForceIncludes></ForceIncludes>
@@ -61,6 +62,7 @@
 				<Args></Args>
 				<WorkingDirectory></WorkingDirectory>
 				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebuggerExe>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebuggerExe>
 				<DebugSln></DebugSln>
 				<Defines></Defines>
 				<ForceIncludes></ForceIncludes>
@@ -77,6 +79,7 @@
 				<Args></Args>
 				<WorkingDirectory></WorkingDirectory>
 				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebuggerExe></DebuggerExe>
 				<DebugSln></DebugSln>
 				<Defines></Defines>
 				<ForceIncludes></ForceIncludes>
@@ -93,6 +96,7 @@
 				<Args></Args>
 				<WorkingDirectory></WorkingDirectory>
 				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
+				<DebuggerExe></DebuggerExe>
 				<DebugSln></DebugSln>
 				<Defines></Defines>
 				<ForceIncludes></ForceIncludes>

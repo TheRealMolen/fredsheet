@@ -11,12 +11,12 @@
 
 namespace ui
 {
+    constexpr int kDefaultFontSize = 24;
+
+
     using ControlPtr = std::shared_ptr<struct ControlState>;
     using ControlHandlerPtr = std::shared_ptr<struct ControlHandler>;
-
-    constexpr int kUiFontSize = 24;
-    extern Font g_fredFont;
-
+    using LayoutGroupPtr = std::shared_ptr<struct LayoutGroup>;
 
     ControlPtr CreateRootControl(int width, int height);
     const ControlPtr& GetRootControl();
@@ -31,7 +31,7 @@ namespace ui
 
     struct ControlHandler
     {
-        using EventHandler = std::function<void(const ControlPtr& ctrlP)>;
+        using EventHandler = std::function<void(ControlPtr& ctrlP)>;
 
         EventHandler OnClick;
         EventHandler OnMenu;
@@ -50,16 +50,34 @@ namespace ui
         Color HoverFg = WHITE;
         Color SelectedFg = YELLOW;
 
-        int TextSize = kUiFontSize;
+        int TextSize = kDefaultFontSize;
 
         Cardinals Padding { 8.f };
     };
     extern const ControlStyle kDefaultControlStyle;
     extern const ControlStyle kNullControlStyle;
+    
+
+    enum class ELayoutAlgo : u8
+    {
+        Fill,
+        HorizBox,
+        VertBox,
+    };
+    struct Layout_Params
+    {
+        ELayoutAlgo Algo = ELayoutAlgo::Fill;
+
+        float Padding = 1;
+        bool Shrink = true;     // if shrink is true, controls will be scaled down so they don't exceed the available space
+        bool Expand = false;    // if expand is true, controls will be scaled up so they completely fill the available space
+    };
 
 
     struct ControlState
     {
+        const char* DbgName = nullptr;
+
         std::string Text;
         const ControlStyle* Style = &kNullControlStyle;
 
@@ -69,6 +87,7 @@ namespace ui
         std::vector<ControlPtr> Children;
 
         Vector2 MinDesiredSize { 0.f, 0.f };
+        u8 IsFixedSize : 1 = false;
 
         u8 IsHovered : 1 = false;
         u8 IsSelected : 1 = false;
@@ -77,32 +96,41 @@ namespace ui
         u8 DesiredSizeDirty : 1 = true;
 
         Rectangle Rect { 0, 0, 100, 100 };
+
+        Layout_Params LayoutParams;
     };
     
+    
+    // -- layout --------------------------------
 
-    void AddChild(const ControlPtr& parentCtrlP, const ControlPtr& childCtrlP);
+    void AddChild(ControlPtr& parentCtrlP, ControlPtr childCtrlP);
 
     inline Color GetBgColor(const ControlState& ctrl);
     inline Color GetFgColor(const ControlState& ctrl);
 
-
-    Vector2 CalcMinDesiredSize(const ControlState& ctrl);
+    void MarkDesiredSizeDirty(ControlState& ctrl);
+    Vector2 CalcMinDesiredOwnSize(const ControlState& ctrl);
     void UpdateDesiredSize(ControlState& ctrl);
-    void UpdateDesiredSizes(std::span<ControlPtr> children);
 
-
-    struct Layout_HorizBox_Params
-    {
-        float Padding = 1;
-        bool Shrink = true;     // if shrink is true, controls will be scaled down so they don't exceed the available space
-        bool Expand = false;    // if expand is true, controls will be scaled up so they completely fill the available space
-    };
-
+    using Layout_HorizBox_Params = Layout_Params;
     void Layout_HorizBox(const Rectangle& parent, std::span<ControlPtr> children, const Layout_HorizBox_Params& params);
 
-
-    using Layout_VertBox_Params = Layout_HorizBox_Params;
+    using Layout_VertBox_Params = Layout_Params;
     void Layout_VertBox(const Rectangle& parent, std::span<ControlPtr> children, const Layout_HorizBox_Params& params);
+
+    void RefreshControlLayout(ControlPtr& ctrl);
+
+
+    // -- input ---------------------------------
+    void HandleInput();
+    
+    // -- rendering ---------------------------------
+    bool NeedsRepaint();
+    void Repaint();
+
+    // -- debug ---------------------------------
+    std::string DumpHierarchyToJson(const ControlPtr& ctrl);
+
 };
 
 

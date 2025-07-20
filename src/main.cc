@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <numeric>
+#include <iostream>
 #include <span>
 #include <stdexcept>
 #include <sstream>
@@ -14,141 +14,54 @@
 #include "ui.h"
 
 
-static ui::ControlPtr gHoveredCtrl;
-constexpr bool gOnlyRepaintWhenDirty = false;
-static bool gNeedRepaint = true;
-
-
 
 void createControls(ui::ControlPtr& parent)
 {
     FRASSERT(parent.get());
     
-    auto refreshChildrenLayout = [](ui::ControlPtr& parent)
-    {
-        ui::ControlState* parentCtrl = parent.get();
-        if (!parentCtrl)
-            return;
-
-        ui::Layout_HorizBox(Rectangle { 0, 200, parentCtrl->Rect.width, 32 }, parentCtrl->Children, { .Padding = 2, .Expand = true });
-        //ui::Layout_VertBox(Rectangle { 100, 0, 200, parentCtrl->Rect.height }, parentCtrl->Children, { .Padding=2, .Expand=false });
-    };
-
     ui::ControlHandlerPtr handler = make_shared<ui::ControlHandler>();
-    handler->OnClick = [&refreshChildrenLayout](const ui::ControlPtr& ctrlP)
+    handler->OnClick = [&parent](ui::ControlPtr& ctrlP)
     {
         ui::ControlState* ctrl = ctrlP.get();
         FRASSERT(ctrl);
 
         ctrl->Text = "CLICKED";
-        ctrl->DesiredSizeDirty = 1;
+        ui::MarkDesiredSizeDirty(*ctrl);
 
-        refreshChildrenLayout(ctrl->Parent);
+        ui::RefreshControlLayout(parent);
     };
+    
+    ui::ControlPtr vb_toplevel = make_shared<ui::ControlState>("VB_TopLevel");
+    vb_toplevel->Style = &ui::kNullControlStyle;
+    vb_toplevel->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::VertBox, .Padding = 4.f };
+    ui::AddChild(parent, vb_toplevel);
+
+    ui::AddChild(vb_toplevel, make_shared<ui::ControlState>("TL_Row1", "Row1"));
+    
+    ui::ControlPtr hb_cells = make_shared<ui::ControlState>("HB_Cells");
+    hb_cells->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::HorizBox, .Padding = 2.f };
+    ui::AddChild(vb_toplevel, hb_cells);
+    
+    ui::AddChild(vb_toplevel, make_shared<ui::ControlState>("TL_Row3", "Row3"));
+    ui::AddChild(vb_toplevel, make_shared<ui::ControlState>("TL_Row4", "Row4"));
 
     for (int i = 0; i < 12; ++i)
     {
-        ui::ControlPtr ctrl = make_shared<ui::ControlState>();
+        ui::ControlPtr ctrl = make_shared<ui::ControlState>("Cell");
         ctrl->Style = &ui::kDefaultControlStyle;
         ctrl->Handlers = handler;
 
         for (int n = 0; n <= i; ++n)
             ctrl->Text += 'x';
 
-        ui::AddChild(parent, ctrl);
+        ui::AddChild(hb_cells, ctrl);
     }
 
-    refreshChildrenLayout(parent);
-}
-
-
-
-void updateHoveredCtrl(const Vector2& inputPos)
-{
-    if (gHoveredCtrl.get())
-    {
-        ui::ControlState* ctrl = gHoveredCtrl.get();
-        if (IsPointInside(inputPos, ctrl->Rect))
-            return;
-
-        gHoveredCtrl.reset();
-        ctrl->IsHovered = 0;
-    }
+    ui::RefreshControlLayout(parent);
     
-    ui::ControlPtr rootCtrl = ui::GetRootControl();
-    FRASSERT(rootCtrl.get());
-
-    for (const ui::ControlPtr& ctrlP : rootCtrl->Children)
-    {
-        ui::ControlState* ctrl = ctrlP.get();
-        if (!IsPointInside(inputPos, ctrl->Rect))
-            continue;
-
-        gHoveredCtrl = ctrlP;
-        ctrl->IsHovered = 1;
-        break;
-    }
-
-    gNeedRepaint = true;
+    std::cout << "post-refresh controls: -----------------------------------\n" << ui::DumpHierarchyToJson(parent) << "\n\n\n";
 }
 
-void tryDispatchMouseClick()
-{
-    if (!gHoveredCtrl.get())
-        return;
-
-    ui::ControlHandlerPtr handlerP = gHoveredCtrl->Handlers;
-    if (handlerP.get())
-    {
-        handlerP->OnClick(gHoveredCtrl);
-    }
-}
-
-
-void RenderControl(const ui::ControlPtr& ctrlP)
-{
-    const ui::ControlState* ctrl = ctrlP.get();
-    if (!ctrl)
-        throw std::invalid_argument("null control in render");
-
-    if (ctrl->Style && ctrl->Style->DrawBg)
-    {
-        const Color bgCol = ui::GetBgColor(*ctrl);
-        DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, bgCol);
-    }
-
-    if (!ctrl->Text.empty())
-    {
-        Vector2 cursor = { ctrl->Rect.x, ctrl->Rect.y };
-        if (ctrl->Style)
-        {
-            const Cardinals& pad = ctrl->Style->Padding;
-            cursor.x += pad.e;
-            cursor.y += pad.n;
-        }
-
-        const Color fgCol = ui::GetFgColor(*ctrl);
-        DrawTextEx(ui::g_fredFont, ctrl->Text.c_str(), cursor, ui::kUiFontSize, 0.f, fgCol);
-    }
-}
-
-
-void render()
-{
-    const ui::ControlState* rootCtrl = ui::GetRootControl().get();
-    if (!rootCtrl)
-    {
-        ClearBackground(WHITE);
-        return;
-    }
-
-    ClearBackground(rootCtrl->Style->NormalBg);
-
-    for (const ui::ControlPtr& ctrlP : rootCtrl->Children)
-    {
-        RenderControl(ctrlP);
-    }
-}
 
 
 int main(int argc, const char** argv)
@@ -165,25 +78,25 @@ int main(int argc, const char** argv)
 
     createControls(rootCtrl);
 
-
     SetTargetFPS(30);
 
     while (!WindowShouldClose())
     {
-        updateHoveredCtrl(GetMousePosition());
+        ui::HandleInput();
 
-        if (IsMouseButtonReleased(0))
+        while (int key = GetKeyPressed())
         {
-            tryDispatchMouseClick();
+            if (key == 'd' || key == 'D')
+            {
+                std::cout << "hierarchy: -----------------------------------\n" << ui::DumpHierarchyToJson(ui::GetRootControl()) << "\n\n\n";
+            }
         }
 
-        if (!gOnlyRepaintWhenDirty || gNeedRepaint)
+        if (ui::NeedsRepaint())
         {
-            gNeedRepaint = false;
-
             BeginDrawing();
 
-            render();
+            ui::Repaint();
 
             EndDrawing();
         }
