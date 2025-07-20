@@ -52,7 +52,7 @@ namespace ui
 
         int TextSize = kDefaultFontSize;
 
-        Cardinals Padding { 8.f };
+        Cardinals Padding { 8.f, 8.f, 4.f, 8.f };
     };
     extern const ControlStyle kDefaultControlStyle;
     extern const ControlStyle kNullControlStyle;

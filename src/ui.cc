@@ -12,7 +12,7 @@ namespace ui
 {
     // functional switches
     constexpr bool gOnlyRepaintWhenDirty = false;
-    constexpr bool gRenderDebugColouredControls = true;
+    constexpr bool gRenderDebugColouredControls = false;
 
 
     int gUiFontSize = kDefaultFontSize;
@@ -31,7 +31,7 @@ namespace ui
 
     void LoadUIFont()
     {
-        gCoreFont = LoadFontEx("C:\\Windows\\Fonts\\calibril.ttf", gUiFontSize, nullptr, 0);
+        gCoreFont = LoadFontEx("data\\fonts\\montserrat\\Montserrat-Light.ttf", gUiFontSize, nullptr, 0);
     }
 
     void DrawUIText(const char* textUtf8, const Vector2& pos, const Color& col)
@@ -96,9 +96,42 @@ namespace ui
         float PadHeight = 0.f;
     };
 
+
+    // helpers for clarity
+    inline float SumDesiredWidths(std::span<const ControlPtr> controls)
+    {
+        float sum = 0.f;
+        for (const ControlPtr& ctrlP : controls)
+            sum += ctrlP->MinDesiredSize.x;
+        return sum;
+    }
+    inline float SumDesiredHeights(std::span<const ControlPtr> controls)
+    {
+        float sum = 0.f;
+        for (const ControlPtr& ctrlP : controls)
+            sum += ctrlP->MinDesiredSize.y;
+        return sum;
+    }
+    inline float MaxDesiredWidth(std::span<const ControlPtr> controls)
+    {
+        float max = 0.f;
+        for (const ControlPtr& ctrlP : controls)
+            max = std::max(ctrlP->MinDesiredSize.x, max);
+        return max;
+    }
+    inline float MaxDesiredHeight(std::span<const ControlPtr> controls)
+    {
+        float max = 0.f;
+        for (const ControlPtr& ctrlP : controls)
+            max = std::max(ctrlP->MinDesiredSize.y, max);
+        return max;
+    }
+
+
     ControlMeasurements Measure_HorizBox(const Rectangle& parentRect, std::span<const ControlPtr> children, const Layout_HorizBox_Params& params)
     {
-        const float minTotalChildWidth = std::accumulate(begin(children), end(children), 0.f, [](float acc, const auto& ctrlP) { return (acc + ctrlP->MinDesiredSize.x); });
+        const float minTotalChildWidth = SumDesiredWidths(children);
+        const float maxChildHeight = MaxDesiredHeight(children);
         const int numChildren = isize(children);
 
         const float xPadding = params.Padding * (numChildren + 1);
@@ -106,7 +139,7 @@ namespace ui
 
         return {
             .Width = minTotalChildWidth + xPadding,
-            .Height = parentRect.height + yPadding,
+            .Height = maxChildHeight + yPadding,
             .PadWidth = xPadding,
             .PadHeight = yPadding,
         };
@@ -118,18 +151,11 @@ namespace ui
         const float availWidth = parentRect.width;
         
         const bool everythingFits = measurements.Width <= availWidth;
+        const bool scaleToFill = (!everythingFits && params.Shrink) || (everythingFits && params.Expand);
+
         float scale = 1.f;
-        if (everythingFits || !params.Shrink)
-        {
-            if (everythingFits && params.Expand)
-            {
-                scale = (availWidth - measurements.PadWidth) / (measurements.Width - measurements.PadWidth);
-            }
-        }
-        else
-        {
+        if (scaleToFill)
             scale = (availWidth - measurements.PadWidth) / (measurements.Width - measurements.PadWidth);
-        }
 
         float trueX = parentRect.x + params.Padding;
         float intX = roundf(trueX);
@@ -156,14 +182,15 @@ namespace ui
 
     ControlMeasurements Measure_VertBox(const Rectangle& parentRect, std::span<const ControlPtr> children, const Layout_VertBox_Params& params)
     {
-        const float minTotalChildHeight = std::accumulate(begin(children), end(children), 0.f, [](float acc, const auto& ctrlP) { return (acc + ctrlP->MinDesiredSize.y); });
+        const float minTotalChildHeight = SumDesiredHeights(children);
+        const float maxChildWidth = MaxDesiredWidth(children);
         const int numChildren = isize(children);
 
         const float xPadding = params.Padding * 2;
         const float yPadding = params.Padding * (numChildren + 1);
 
         return {
-            .Width = parentRect.width + xPadding,
+            .Width = maxChildWidth + xPadding,
             .Height = minTotalChildHeight + yPadding,
             .PadWidth = xPadding,
             .PadHeight = yPadding,
@@ -176,18 +203,11 @@ namespace ui
         const float availHeight = parentRect.height;
         
         const bool everythingFits = (measurements.Height) <= availHeight;
+        const bool scaleToFill = (!everythingFits && params.Shrink) || (everythingFits && params.Expand);
+
         float scale = 1.f;
-        if (everythingFits || !params.Shrink)
-        {
-            if (everythingFits && params.Expand)
-            {
-                scale = (availHeight - measurements.PadHeight) / (measurements.Height - measurements.PadHeight);
-            }
-        }
-        else
-        {
+        if (scaleToFill)
             scale = (availHeight - measurements.PadHeight) / (measurements.Height - measurements.PadHeight);
-        }
 
         float trueY = parentRect.y + params.Padding;
         float intY = roundf(trueY);
@@ -210,29 +230,31 @@ namespace ui
         }
     }
 
-    ControlMeasurements Measure_Control(const ControlPtr& ctrlP)
+    ControlMeasurements Measure_Control(ControlState& ctrl)
     {
-        const ControlState* ctrl = ctrlP.get();
-        FRASSERT(ctrl);
+        ControlMeasurements m { .Width = ctrl.MinDesiredSize.x, .Height = ctrl.MinDesiredSize.y };
 
-        ControlMeasurements m { .Width = ctrl->MinDesiredSize.x, .Height = ctrl->MinDesiredSize.y };
+        m.PadWidth = ctrl.Style->Padding.e + ctrl.Style->Padding.w;
+        m.PadHeight = ctrl.Style->Padding.n + ctrl.Style->Padding.s;
 
-        if (!ctrl->IsFixedSize && !ctrl->Children.empty())
+        if (!ctrl.IsFixedSize && !ctrl.Children.empty())
         {
-            Rectangle parentRect { .width = ctrl->MinDesiredSize.x, .height = ctrl->MinDesiredSize.y };
+            Rectangle parentRect { .width = ctrl.MinDesiredSize.x, .height = ctrl.MinDesiredSize.y };
 
-            switch (ctrl->LayoutParams.Algo)
+            switch (ctrl.LayoutParams.Algo)
             {
                 case ELayoutAlgo::HorizBox:
                 {
-                    ControlMeasurements layoutM = Measure_HorizBox(parentRect, ctrl->Children, ctrl->LayoutParams);
+                    ControlMeasurements layoutM = Measure_HorizBox(parentRect, ctrl.Children, ctrl.LayoutParams);
                     m.Width = std::max(m.Width, layoutM.Width);
+                    m.Height = std::max(m.Height, layoutM.Height);
                 }
                 break;
 
                 case ELayoutAlgo::VertBox:
                 {
-                    ControlMeasurements layoutM = Measure_VertBox(parentRect, ctrl->Children, ctrl->LayoutParams);
+                    ControlMeasurements layoutM = Measure_VertBox(parentRect, ctrl.Children, ctrl.LayoutParams);
+                    m.Width = std::max(m.Width, layoutM.Width);
                     m.Height = std::max(m.Height, layoutM.Height);
                 }
                 break;
@@ -241,11 +263,6 @@ namespace ui
                     break;  // trivial case
             }
         }
-
-        m.PadWidth = ctrl->Style->Padding.e + ctrl->Style->Padding.w;
-        m.PadHeight = ctrl->Style->Padding.n + ctrl->Style->Padding.s;
-        m.Width += m.PadWidth;
-        m.Height += m.PadHeight;
 
         return m;
     }
@@ -298,6 +315,9 @@ namespace ui
 
             UpdateDesiredSize(*child);
         }
+
+        ControlMeasurements m = Measure_Control(ctrl);
+        ctrl.MinDesiredSize = Vector2Max(ctrl.MinDesiredSize, { m.Width, m.Height });
 
         ctrl.DesiredSizeDirty = false;
     }
@@ -442,9 +462,9 @@ namespace ui
 
     inline Color DebugColour(const ControlState& ctrl)
     {
-        const float rf = ctrl.Rect.x * 10.f;
-        const float gf = ctrl.Rect.y * 10.f;
-        const float bf = (ctrl.Rect.width + ctrl.Rect.height) * 10.f;
+        const float rf = ctrl.Rect.x * 13.f;
+        const float gf = ctrl.Rect.y * 7.f;
+        const float bf = (ctrl.Rect.width + ctrl.Rect.height) * 19.f;
 
         return Color { u8(int(rf)), u8(int(gf)), u8(int(bf)), 255 };
     }

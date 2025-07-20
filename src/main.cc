@@ -1,14 +1,8 @@
 #include "raylib.h"
 #include "raymath.h"
 
-#include <cmath>
-#include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <span>
-#include <stdexcept>
-#include <sstream>
-#include <vector>
 
 #include "fredlib.h"
 #include "ui.h"
@@ -33,7 +27,7 @@ void createControls(ui::ControlPtr& parent)
     
     ui::ControlPtr vb_toplevel = make_shared<ui::ControlState>("VB_TopLevel");
     vb_toplevel->Style = &ui::kNullControlStyle;
-    vb_toplevel->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::VertBox, .Padding = 4.f };
+    vb_toplevel->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::VertBox, .Padding = 10.f };
     ui::AddChild(parent, vb_toplevel);
 
     ui::AddChild(vb_toplevel, make_shared<ui::ControlState>("TL_Row1", "Row1"));
@@ -52,7 +46,7 @@ void createControls(ui::ControlPtr& parent)
         ctrl->Handlers = handler;
 
         for (int n = 0; n <= i; ++n)
-            ctrl->Text += 'x';
+            ctrl->Text += 'X';
 
         ui::AddChild(hb_cells, ctrl);
     }
