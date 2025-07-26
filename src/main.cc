@@ -8,10 +8,23 @@
 #include "ui.h"
 
 
+ui::IconAtlasPtr gIconAtlas;
+
+
+void OnToolbarBtnClicked(ui::ControlPtr& ctrlP)
+{
+    ui::ControlState* ctrl = ctrlP.get();
+    FRASSERT(ctrl);
+
+    std::cout << ctrl->DbgName << " Clicked" << std::endl;
+}
+
 
 void createControls(ui::ControlPtr& parent)
 {
     FRASSERT(parent.get());
+
+    gIconAtlas = ui::LoadIconAtlas("data\\icons.png", 32.f);
     
     ui::ControlHandlerPtr handler = make_shared<ui::ControlHandler>();
     handler->OnClick = [&parent](ui::ControlPtr& ctrlP)
@@ -29,6 +42,25 @@ void createControls(ui::ControlPtr& parent)
     vb_toplevel->Style = &ui::kNullControlStyle;
     vb_toplevel->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::VertBox, .Padding = 10.f };
     ui::AddChild(parent, vb_toplevel);
+
+
+    ui::ControlPtr hb_toolbar = make_shared<ui::ControlState>("HB_ToolBar");
+    hb_toolbar->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::HorizBox, .Padding = 2.f };
+    ui::AddChild(vb_toplevel, hb_toolbar);
+
+    ui::ControlHandlerPtr toolbar_handler = make_shared<ui::ControlHandler>();
+    toolbar_handler->OnClick = OnToolbarBtnClicked;
+    auto addToolbarBtn = [ & ](const char* dbgName, int locU, int locV)
+    {
+        ui::ControlPtr btn = make_shared<ui::ControlState>(dbgName);
+        btn->Style = &ui::kBtnControlStyle;
+        btn->Icon = { .Atlas = gIconAtlas, .Location = { float(locU), float(locV) } };
+        btn->Handlers = toolbar_handler;
+        ui::AddChild(hb_toolbar, btn);
+    };
+    addToolbarBtn("Toolbar_New", 0, 0);
+    addToolbarBtn("Toolbar_Open", 1, 0);
+    addToolbarBtn("Toolbar_Save", 2, 0);
 
     ui::AddChild(vb_toplevel, make_shared<ui::ControlState>("TL_Row1", "Row1"));
     

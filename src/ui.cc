@@ -20,6 +20,7 @@ namespace ui
 
     const ControlStyle kDefaultControlStyle;
     const ControlStyle kNullControlStyle = { .DrawBg = 0 };
+    const ControlStyle kBtnControlStyle = { .DrawBg = 0, .NormalFg = Color {220, 220, 220, 255}, .HoverFg = YELLOW, .Padding { 2.f } };
     
     ControlPtr gRootControl;
 
@@ -47,6 +48,22 @@ namespace ui
             throw std::invalid_argument("no core UI font loaded");
 
         DrawTextEx(*gCoreFont, textUtf8, Vector2{ x, y }, gUiFontSize, 0.f, col);
+    }
+
+
+    
+    IconAtlasPtr LoadIconAtlas(const char* filename, float iconSize)
+    {
+        IconAtlasPtr atlasP = std::make_shared<IconAtlas>();
+        IconAtlas* atlas = atlasP.get();
+
+        atlas->Texture = LoadTexture(filename);
+        if (!atlas->Texture.id)
+            return {};
+
+        atlas->IconSize = Vector2(iconSize, iconSize);
+
+        return atlasP;
     }
 
 
@@ -289,6 +306,11 @@ namespace ui
         FRASSERT(ctrl.Style);
 
         Vector2 minContentSize(kDefaultMinDim, kDefaultMinDim);
+        
+        if (const IconAtlas* atlas = ctrl.Icon.Atlas.get())
+        {
+            minContentSize = Vector2Max(minContentSize, atlas->IconSize);
+        }
 
         if (!ctrl.Text.empty() && gCoreFont.has_value())
         {
@@ -486,9 +508,23 @@ namespace ui
             DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, dbgCol);
         }
 
-        for (const ui::ControlPtr& childP : ctrl->Children)
+        Vector2 cursor = { ctrl->Rect.x, ctrl->Rect.y };
+        if (ctrl->Style)
         {
-            RenderControl(childP);
+            const Cardinals& pad = ctrl->Style->Padding;
+            cursor.x += pad.e;
+            cursor.y += pad.n;
+        }
+        const Color fgCol = ui::GetFgColor(*ctrl);
+
+        if (const IconAtlas* atlas = ctrl->Icon.Atlas.get())
+        {
+            const Rectangle rec {
+                ctrl->Icon.Location.x * atlas->IconSize.x, ctrl->Icon.Location.y * atlas->IconSize.y,
+                atlas->IconSize.x, atlas->IconSize.y
+            };
+            
+            DrawTextureRec(atlas->Texture, rec, cursor, fgCol);
         }
 
         if (!ctrl->Text.empty())
@@ -496,16 +532,14 @@ namespace ui
             if (!gCoreFont.has_value())
                 throw std::invalid_argument("no core ui font loaded");
 
-            Vector2 cursor = { ctrl->Rect.x, ctrl->Rect.y };
-            if (ctrl->Style)
-            {
-                const Cardinals& pad = ctrl->Style->Padding;
-                cursor.x += pad.e;
-                cursor.y += pad.n;
-            }
-
             const Color fgCol = ui::GetFgColor(*ctrl);
             DrawTextEx(*gCoreFont, ctrl->Text.c_str(), cursor, gUiFontSize, 0.f, fgCol);
+        }
+
+        // draw children
+        for (const ui::ControlPtr& childP : ctrl->Children)
+        {
+            RenderControl(childP);
         }
     }
 

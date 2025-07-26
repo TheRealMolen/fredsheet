@@ -16,7 +16,7 @@ namespace ui
 
     using ControlPtr = std::shared_ptr<struct ControlState>;
     using ControlHandlerPtr = std::shared_ptr<struct ControlHandler>;
-    using LayoutGroupPtr = std::shared_ptr<struct LayoutGroup>;
+    using IconAtlasPtr = std::shared_ptr<struct IconAtlas>;
 
     ControlPtr CreateRootControl(int width, int height);
     const ControlPtr& GetRootControl();
@@ -27,6 +27,20 @@ namespace ui
 
     void DrawUIText(const char* textUtf8, const Vector2& pos, const Color& col);
     void DrawUIText(const char* textUtf8, float x, float y, const Color& col);
+
+    IconAtlasPtr LoadIconAtlas(const char* filename, float iconSize);
+
+
+    struct IconAtlas
+    {
+        Texture2D Texture;
+        Vector2 IconSize;
+    };
+    struct IconRef
+    {
+        IconAtlasPtr Atlas;
+        Vector2 Location;
+    };
 
 
     struct ControlHandler
@@ -56,6 +70,7 @@ namespace ui
     };
     extern const ControlStyle kDefaultControlStyle;
     extern const ControlStyle kNullControlStyle;
+    extern const ControlStyle kBtnControlStyle;
     
 
     enum class ELayoutAlgo : u8
@@ -79,6 +94,8 @@ namespace ui
         const char* DbgName = nullptr;
 
         std::string Text;
+        IconRef Icon;
+
         const ControlStyle* Style = &kNullControlStyle;
 
         ControlHandlerPtr Handlers;
