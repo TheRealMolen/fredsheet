@@ -465,25 +465,26 @@ namespace ui
     }
     
 
-    void TryDispatchMouseClick()
-    {
-        if (!gHoveredCtrl.get())
-            return;
-
-        ui::ControlHandlerPtr handlerP = gHoveredCtrl->Handlers;
-        if (handlerP.get())
-        {
-            handlerP->OnClick(gHoveredCtrl);
-        }
-    }
-    
     void HandleInput()
     {
         UpdateHoveredControl(GetMousePosition());
 
-        if (IsMouseButtonReleased(0))
+        if (ui::ControlState* ctrl = gHoveredCtrl.get())
         {
-            TryDispatchMouseClick();
+            if (ui::ControlHandler* handlers = ctrl->Handlers.get())
+            {
+                Vector2 wndMousePos = GetMousePosition();
+                Vector2 localMousePos { wndMousePos.x - ctrl->Rect.x, wndMousePos.y - ctrl->Rect.y };
+
+                if (IsMouseButtonReleased(0))
+                {
+                    handlers->OnClick(gHoveredCtrl, localMousePos);
+                }
+                if (IsMouseButtonReleased(1))
+                {
+                    handlers->OnMenu(gHoveredCtrl, localMousePos);
+                }
+            }
         }
     }
     
@@ -509,15 +510,23 @@ namespace ui
         const ui::ControlState* ctrl = ctrlP.get();
         FRASSERT(ctrl);
 
-        if (ctrl->Style && ctrl->Style->DrawBg)
+        if constexpr (gRenderDebugColouredControls)
+        {
+            const Color dbgCol = DebugColour(*ctrl);
+            DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, dbgCol);
+        }
+        else if (ctrl->Style && ctrl->Style->DrawBg)
         {
             const Color bgCol = ui::GetBgColor(*ctrl);
             DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, bgCol);
         }
-        else if constexpr (gRenderDebugColouredControls)
+
+        if (ctrl->UseCustomPaint)
         {
-            const Color dbgCol = DebugColour(*ctrl);
-            DrawRectangle(ctrl->Rect.x, ctrl->Rect.y, ctrl->Rect.width, ctrl->Rect.height, dbgCol);
+            const ui::ControlHandler* handlers = ctrl->Handlers.get();
+            FRASSERT(handlers);
+            handlers->Paint(ctrlP);
+            return;
         }
 
         Vector2 cursor = { ctrl->Rect.x, ctrl->Rect.y };

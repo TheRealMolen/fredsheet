@@ -19,7 +19,7 @@
 
 // --------------------------------------------------------------------------------
 
-void OnToolbarBtnClicked(ui::ControlPtr& ctrlP)
+void OnToolbarBtnClicked(ui::ControlPtr& ctrlP, const Vector2& mousePos)
 {
     ui::ControlState* ctrl = ctrlP.get();
     FRASSERT(ctrl);

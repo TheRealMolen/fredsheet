@@ -47,10 +47,13 @@ namespace ui
 
     struct ControlHandler
     {
-        using EventHandler = std::function<void(ControlPtr& ctrlP)>;
+        using EventHandler = std::function<void(const ControlPtr& ctrlP)>;
+        using MouseEventHandler = std::function<void(ControlPtr& ctrlP, const Vector2& mousePos)>;
 
-        EventHandler OnClick;
-        EventHandler OnMenu;
+        MouseEventHandler OnClick;
+        MouseEventHandler OnMenu;
+
+        EventHandler Paint;    // only called if UseCustomPaint is true
     };
 
 
@@ -108,6 +111,8 @@ namespace ui
 
         Vector2 MinDesiredSize { 0.f, 0.f };
         u8 IsFixedSize : 1 = false;
+
+        u8 UseCustomPaint : 1 = false;
 
         u8 IsHovered : 1 = false;
         u8 IsSelected : 1 = false;
