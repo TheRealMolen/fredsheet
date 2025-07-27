@@ -1,15 +1,101 @@
+
 #include "raylib.h"
 #include "raymath.h"
 
 #include <cstdlib>
 #include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "test_framework.h"
 
 #include "fredlib.h"
 #include "ui.h"
 
 
-ui::IconAtlasPtr gIconAtlas;
+// --------------------------------------------------------------------------------
 
+struct GridSheet
+{
+    using StringList = std::vector<std::string>;
+    using StringGrid = std::vector<StringList>;
+
+    StringGrid RawCells;    // the backing data - what's serialised to disk
+
+    static constexpr int kDefaultNumCols = 20;
+    static constexpr int kDefaultRowWidth = 80;
+
+    std::vector<int> ColWidths { kDefaultNumCols, kDefaultRowWidth };
+
+    std::weak_ptr<struct GridSheetUI> UI;
+};
+using GridSheetPtr = std::shared_ptr<GridSheet>;
+
+// --------------------------------------------------------------------------------
+
+struct GridSheetUI
+{
+    using ControlList = std::vector<ui::ControlPtr>;
+    using ControlGrid = std::vector<ControlList>;
+
+    std::shared_ptr<GridSheet> Sheet;
+
+    ui::ControlPtr ParentCtrl;
+
+    ControlList ColHeaderControls;
+    ControlList RowHeaderControls;
+
+    ControlGrid CellControls;
+};
+using GridSheetUIPtr = std::shared_ptr<GridSheetUI>;
+
+// --------------------------------------------------------------------------------
+
+GridSheetPtr CreateNewSheet()
+{
+    GridSheetPtr sheet = make_shared<GridSheet>();
+
+    // TODO: set up default rows, columns, etc
+
+    return sheet;
+}
+
+// --------------------------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------------------------
+
+void AddRows(GridSheetUI& ui, const GridSheet& sheet, int numRowsToAdd)
+{
+    FRASSERT(ui.ParentCtrl.get());
+    // TODO: add new row controls
+    // TODO: add new cell controls
+}
+
+void AddRows(GridSheet& sheet, int numRowsToAdd)
+{
+    const int numCols = isize(sheet.ColWidths);
+
+    // add raw cells
+    sheet.RawCells.reserve(isize(sheet.RawCells) + numRowsToAdd);
+    for (int r = 0; r < numRowsToAdd; ++r)
+    {
+        sheet.RawCells.emplace_back(numCols);
+    }
+
+    if (auto uiP = sheet.UI.lock())
+    {
+        AddRows(*uiP.get(), sheet, numRowsToAdd);
+    }
+}
+
+
+
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 void OnToolbarBtnClicked(ui::ControlPtr& ctrlP)
 {
@@ -24,7 +110,7 @@ void createControls(ui::ControlPtr& parent)
 {
     FRASSERT(parent.get());
 
-    gIconAtlas = ui::LoadIconAtlas("data\\icons.png", 32.f);
+    ui::IconAtlasPtr iconAtlas = ui::LoadIconAtlas("data\\icons.png", 32.f);
     
     ui::ControlHandlerPtr handler = make_shared<ui::ControlHandler>();
     handler->OnClick = [&parent](ui::ControlPtr& ctrlP)
@@ -54,7 +140,7 @@ void createControls(ui::ControlPtr& parent)
     {
         ui::ControlPtr btn = make_shared<ui::ControlState>(dbgName);
         btn->Style = &ui::kBtnControlStyle;
-        btn->Icon = { .Atlas = gIconAtlas, .Location = { float(locU), float(locV) } };
+        btn->Icon = { .Atlas = iconAtlas, .Location = { float(locU), float(locV) } };
         btn->Handlers = toolbar_handler;
         ui::AddChild(hb_toolbar, btn);
     };
@@ -85,12 +171,11 @@ void createControls(ui::ControlPtr& parent)
 
     ui::RefreshControlLayout(parent);
     
-    std::cout << "post-refresh controls: -----------------------------------\n" << ui::DumpHierarchyToJson(parent) << "\n\n\n";
+    //std::cout << "post-refresh controls: -----------------------------------\n" << ui::DumpHierarchyToJson(parent) << "\n\n\n";
 }
 
 
-
-int main(int argc, const char** argv)
+int guardedMain()
 {
     const int screenWidth = 1600;
     const int screenHeight = 1024;
@@ -136,4 +221,57 @@ int main(int argc, const char** argv)
     CloseWindow();
 
     return 0;
+}
+
+
+
+int main(int argc, const char** argv)
+{
+    // first, run our unit tests
+    // see https://github.com/doctest/doctest/blob/master/doc/markdown/main.md
+    doctest::Context testContext;
+    testContext.applyCommandLine(argc, argv);
+    int testResult = testContext.run();
+    if (testResult || testContext.shouldExit())
+        return testResult;
+
+
+    int returnCode = 0;
+    try
+    {
+        returnCode = guardedMain();
+    }
+    catch(std::string& s)
+    {
+        std::cerr << "cataclysm: " << s << "\n";
+        std::cerr.flush();
+
+        OutputDebugStringA("Uncaught Exception: ");
+        OutputDebugStringA(s.c_str());
+        OutputDebugStringA("\n");
+
+        returnCode = 1;
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "cataclysm: " << e.what() << "\n";
+        std::cerr.flush();
+
+        OutputDebugStringA("Uncaught Exception: ");
+        OutputDebugStringA(e.what());
+        OutputDebugStringA("\n");
+
+        returnCode = 2;
+    }
+    catch(...)
+    {
+        std::cerr << "unknown cataclysm\n";
+        std::cerr.flush();
+
+        OutputDebugStringA("Uncaught Unknown Exception o_O\n");
+
+        returnCode = 3;
+    }
+
+    return returnCode;
 }

@@ -43,6 +43,8 @@ pub fn build(b: *std.Build) !void {
 
     const cppFlags = &[_][]const u8{ "-std=c++23", "-Wall", "-Werror" };
     exe.addCSourceFiles(.{ .files = cppFiles.items, .flags = cppFlags });
+    exe.addIncludePath(b.path("extern"));
+    exe.addIncludePath(b.path("src"));
     exe.linkLibC();
     exe.linkLibCpp();
     exe.linkLibrary(raylib_art);

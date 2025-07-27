@@ -1,5 +1,7 @@
 #include "ui.h"
 
+#include "geom.h"
+
 #include "raymath.h"
 
 #include <cmath>

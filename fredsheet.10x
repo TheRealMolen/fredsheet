@@ -31,6 +31,8 @@
 		</AdditionalIncludePaths>
 		<Defines>
 			<Define>__cplusplus=202302L</Define>
+			<Define>FREDSHEET_10x</Define>
+			<Define>_WIN32</Define>
 		</Defines>
 		<ConfigProperties>
 			<ConfigAndPlatform>

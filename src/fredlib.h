@@ -1,13 +1,15 @@
 #pragma once
 
-#include <cassert>
+#include "debug/assert.h"
+
 #include <cstdint>
+#include <memory>
 
 using u8 = uint8_t;
 using u32 = uint32_t;
 
 
-#define FRASSERT    assert
+#define FRASSERT    _ASSERT
 
 
 
@@ -34,12 +36,23 @@ struct Cardinals
 
 
 
-inline bool IsPointInside(const Vector2& pt, const Rectangle& rect)
-{
-    if (pt.x < rect.x || pt.y < rect.y)
-        return false;
-    if (pt.x >= (rect.x + rect.width) || (pt.y >= rect.y + rect.height))
-        return false;
+// workaround for 10x parser not supporting inline namespaces
+#ifdef FREDSHEET_10x
 
-    return true;
-}
+namespace std
+{
+    using weak_ptr = _LIBCPP_ABI_NAMESPACE::weak_ptr;
+    using shared_ptr = _LIBCPP_ABI_NAMESPACE::shared_ptr;
+
+    inline auto make_shared(auto&&... args)
+    {
+        return _LIBCPP_ABI_NAMESPACE::make_shared(args);
+    }
+
+
+    using string = _LIBCPP_ABI_NAMESPACE::string;
+    using string_view = _LIBCPP_ABI_NAMESPACE::string_view;
+    using vector = _LIBCPP_ABI_NAMESPACE::vector;
+};
+
+#endif
