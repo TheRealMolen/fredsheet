@@ -23,6 +23,7 @@ namespace ui
     const ControlStyle kDefaultControlStyle;
     const ControlStyle kNullControlStyle = { .DrawBg = 0 };
     const ControlStyle kBtnControlStyle = { .DrawBg = 0, .NormalFg = Color {220, 220, 220, 255}, .HoverFg = YELLOW, .Padding { 2.f } };
+    const ControlStyle kTightControlStyle = { .Padding { 1.f } };
     
     ControlPtr gRootControl;
 
@@ -52,6 +53,15 @@ namespace ui
         DrawTextEx(*gCoreFont, textUtf8, Vector2{ x, y }, gUiFontSize, 0.f, col);
     }
 
+    float MeasureTextHeight(float fontSize)
+    {
+        if (!gCoreFont.has_value())
+            throw std::invalid_argument("no core UI font loaded");
+        
+        const Vector2 textSize = MeasureTextEx(*gCoreFont, "Mp", fontSize, 0.f);
+        return textSize.y;
+    }
+
 
     
     IconAtlasPtr LoadIconAtlas(const char* filename, float iconSize)
@@ -73,7 +83,7 @@ namespace ui
     {
         FRASSERT(!gRootControl.get());
 
-        ui::ControlPtr ctrl = make_shared<ui::ControlState>("ROOT");
+        ui::ControlPtr ctrl = std::make_shared<ui::ControlState>("ROOT");
         ctrl->Rect = { 0.f, 0.f, float(width), float(height) };
         ctrl->Style = &kNullControlStyle;
 

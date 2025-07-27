@@ -28,6 +28,8 @@ namespace ui
     void DrawUIText(const char* textUtf8, const Vector2& pos, const Color& col);
     void DrawUIText(const char* textUtf8, float x, float y, const Color& col);
 
+    float MeasureTextHeight(float fontSize);
+
     IconAtlasPtr LoadIconAtlas(const char* filename, float iconSize);
 
 
@@ -71,6 +73,7 @@ namespace ui
     extern const ControlStyle kDefaultControlStyle;
     extern const ControlStyle kNullControlStyle;
     extern const ControlStyle kBtnControlStyle;
+    extern const ControlStyle kTightControlStyle;
     
 
     enum class ELayoutAlgo : u8

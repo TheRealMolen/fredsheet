@@ -4,69 +4,84 @@
 
 // --------------------------------------------------------------------------------
 
-TEST_CASE("[sheet] testing int -> sheetIx")
+TEST_CASE("[sheet] testing int -> columnName")
 {
-    CHECK_EQ(IntToSheetIndex(0), "A");
-    CHECK_EQ(IntToSheetIndex(1), "B");
-    CHECK_EQ(IntToSheetIndex(25), "Z");
-    CHECK_EQ(IntToSheetIndex(26), "AA");
-    CHECK_EQ(IntToSheetIndex(27), "AB");
-    CHECK_EQ(IntToSheetIndex(26 + 26), "BA");
-    CHECK_EQ(IntToSheetIndex(26 + 27), "BB");
-    CHECK_EQ(IntToSheetIndex((2*26) + 26), "CA");
-    CHECK_EQ(IntToSheetIndex((2*26) + 27), "CB");
-    CHECK_EQ(IntToSheetIndex((26*26)-1), "YZ");
-    CHECK_EQ(IntToSheetIndex((26*26)), "ZA");
-    CHECK_EQ(IntToSheetIndex((26*26)+25), "ZZ");
-    CHECK_EQ(IntToSheetIndex((27*26)), "AAA");
-    CHECK_EQ(IntToSheetIndex((27*26)+1), "AAB");
-    CHECK_EQ(IntToSheetIndex((27*26)+25), "AAZ");
-    CHECK_EQ(IntToSheetIndex((27*26)+26), "ABA");
-    CHECK_EQ(IntToSheetIndex((27*26)+(26*2)), "ACA");
-    CHECK_EQ(IntToSheetIndex((27*26)+(26*25)), "AZA");
-    CHECK_EQ(IntToSheetIndex((27*26)+(26*25)+25), "AZZ");
-    CHECK_EQ(IntToSheetIndex((27*26)+(26*26)), "BAA");
-    CHECK_EQ(IntToSheetIndex((27*26)+(2*26*26)), "CAA");
-    CHECK_EQ(IntToSheetIndex((1 + 26*26) * 26), "ZAA");
-    CHECK_EQ(IntToSheetIndex((2 + 26*26) * 26), "ZBA");
-    CHECK_EQ(IntToSheetIndex((27*26) * 26), "ZZA");
-    CHECK_EQ(IntToSheetIndex(((27*26) * 26) + 25), "ZZZ");
+    CHECK_EQ(IntToColumnName(0), "A");
+    CHECK_EQ(IntToColumnName(1), "B");
+    CHECK_EQ(IntToColumnName(25), "Z");
+    CHECK_EQ(IntToColumnName(26), "AA");
+    CHECK_EQ(IntToColumnName(27), "AB");
+    CHECK_EQ(IntToColumnName(26 + 26), "BA");
+    CHECK_EQ(IntToColumnName(26 + 27), "BB");
+    CHECK_EQ(IntToColumnName((2*26) + 26), "CA");
+    CHECK_EQ(IntToColumnName((2*26) + 27), "CB");
+    CHECK_EQ(IntToColumnName((26*26)-1), "YZ");
+    CHECK_EQ(IntToColumnName((26*26)), "ZA");
+    CHECK_EQ(IntToColumnName((26*26)+25), "ZZ");
+    CHECK_EQ(IntToColumnName((27*26)), "AAA");
+    CHECK_EQ(IntToColumnName((27*26)+1), "AAB");
+    CHECK_EQ(IntToColumnName((27*26)+25), "AAZ");
+    CHECK_EQ(IntToColumnName((27*26)+26), "ABA");
+    CHECK_EQ(IntToColumnName((27*26)+(26*2)), "ACA");
+    CHECK_EQ(IntToColumnName((27*26)+(26*25)), "AZA");
+    CHECK_EQ(IntToColumnName((27*26)+(26*25)+25), "AZZ");
+    CHECK_EQ(IntToColumnName((27*26)+(26*26)), "BAA");
+    CHECK_EQ(IntToColumnName((27*26)+(2*26*26)), "CAA");
+    CHECK_EQ(IntToColumnName((1 + 26*26) * 26), "ZAA");
+    CHECK_EQ(IntToColumnName((2 + 26*26) * 26), "ZBA");
+    CHECK_EQ(IntToColumnName((27*26) * 26), "ZZA");
+    CHECK_EQ(IntToColumnName(((27*26) * 26) + 25), "ZZZ");
 
-    CHECK_ASSERTS(IntToSheetIndex(((27 * 26) * 26) + 26));
+    CHECK_ASSERTS(IntToColumnName(((27 * 26) * 26) + 26));
 }
 
 // --------------------------------------------------------------------------------
 
-TEST_CASE("[sheet] testing sheetIx -> int")
+TEST_CASE("[sheet] testing columnName -> int")
 {
-    CHECK_EQ(SheetIndexToInt("A"), 0);
-    CHECK_EQ(SheetIndexToInt("B"), 1);
-    CHECK_EQ(SheetIndexToInt("Z"), 25);
-    CHECK_EQ(SheetIndexToInt("AA"), 26);
-    CHECK_EQ(SheetIndexToInt("AB"), 27);
-    CHECK_EQ(SheetIndexToInt("BA"), 26 + 26);
-    CHECK_EQ(SheetIndexToInt("BB"), 26 + 27);
-    CHECK_EQ(SheetIndexToInt("CA"), (2*26) + 26);
-    CHECK_EQ(SheetIndexToInt("CB"), (2*26) + 27);
-    CHECK_EQ(SheetIndexToInt("YZ"), (26*26)-1);
-    CHECK_EQ(SheetIndexToInt("ZA"), (26*26));
-    CHECK_EQ(SheetIndexToInt("ZZ"), (26*26)+25);
-    CHECK_EQ(SheetIndexToInt("AAA"), (27*26));
-    CHECK_EQ(SheetIndexToInt("AAB"), (27*26)+1);
-    CHECK_EQ(SheetIndexToInt("AAZ"), (27*26)+25);
-    CHECK_EQ(SheetIndexToInt("ABA"), (27*26)+26);
+    CHECK_EQ(ColumnNameToInt("A"), 0);
+    CHECK_EQ(ColumnNameToInt("B"), 1);
+    CHECK_EQ(ColumnNameToInt("Z"), 25);
+    CHECK_EQ(ColumnNameToInt("AA"), 26);
+    CHECK_EQ(ColumnNameToInt("AB"), 27);
+    CHECK_EQ(ColumnNameToInt("BA"), 26 + 26);
+    CHECK_EQ(ColumnNameToInt("BB"), 26 + 27);
+    CHECK_EQ(ColumnNameToInt("CA"), (2*26) + 26);
+    CHECK_EQ(ColumnNameToInt("CB"), (2*26) + 27);
+    CHECK_EQ(ColumnNameToInt("YZ"), (26*26)-1);
+    CHECK_EQ(ColumnNameToInt("ZA"), (26*26));
+    CHECK_EQ(ColumnNameToInt("ZZ"), (26*26)+25);
+    CHECK_EQ(ColumnNameToInt("AAA"), (27*26));
+    CHECK_EQ(ColumnNameToInt("AAB"), (27*26)+1);
+    CHECK_EQ(ColumnNameToInt("AAZ"), (27*26)+25);
+    CHECK_EQ(ColumnNameToInt("ABA"), (27*26)+26);
 }
 
 // --------------------------------------------------------------------------------
 
-TEST_CASE("[sheet] testing int -> sheetIx -> int")
+TEST_CASE("[sheet] testing int -> columnName -> int")
 {
     for (int ix = 0; ix < MaxSheetIndex; ++ix)
     {
-        std::string s = IntToSheetIndex(ix);
-        int roundTripIx = SheetIndexToInt(s);
+        std::string s = IntToColumnName(ix);
+        int roundTripIx = ColumnNameToInt(s);
         CHECK_EQ(ix, roundTripIx);
     }
+}
+
+// --------------------------------------------------------------------------------
+
+TEST_CASE("[sheet] testing rowName -> int")
+{
+    CHECK_EQ(RowNameToInt("1"), 0);
+    CHECK_EQ(RowNameToInt("1000"), 999);
+
+    CHECK_THROWS(RowNameToInt(""));
+    CHECK_THROWS(RowNameToInt("0"));
+    CHECK_THROWS(RowNameToInt("A"));
+    CHECK_THROWS(RowNameToInt("-1"));
+    CHECK_THROWS(RowNameToInt("0x1"));
+    CHECK_THROWS(RowNameToInt("9999999999999999999999999999999999999999"));
 }
 
 // --------------------------------------------------------------------------------

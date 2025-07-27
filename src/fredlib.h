@@ -12,9 +12,7 @@ using u32 = uint32_t;
 #define FRASSERT    _ASSERT
 
 
-
-using std::begin, std::end, std::size;
-using std::weak_ptr, std::shared_ptr, std::make_shared;
+using std::begin, std::end, std::size;;
 
 inline int isize(const auto& cont)
 {
@@ -38,21 +36,11 @@ struct Cardinals
 
 // workaround for 10x parser not supporting inline namespaces
 #ifdef FREDSHEET_10x
-
 namespace std
 {
-    using weak_ptr = _LIBCPP_ABI_NAMESPACE::weak_ptr;
-    using shared_ptr = _LIBCPP_ABI_NAMESPACE::shared_ptr;
+    using namespace _LIBCPP_ABI_NAMESPACE;
 
-    inline auto make_shared(auto&&... args)
-    {
-        return _LIBCPP_ABI_NAMESPACE::make_shared(args);
-    }
-
-
-    using string = _LIBCPP_ABI_NAMESPACE::string;
-    using string_view = _LIBCPP_ABI_NAMESPACE::string_view;
-    using vector = _LIBCPP_ABI_NAMESPACE::vector;
+    using string = _LIBCPP_ABI_NAMESPACE::basic_string<char>;
+    using string_view = _LIBCPP_ABI_NAMESPACE::basic_string_view<char>;
 };
-
 #endif
