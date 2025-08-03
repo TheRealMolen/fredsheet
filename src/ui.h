@@ -61,9 +61,9 @@ namespace ui
     {
         u8 DrawBg : 1 = 1;
 
-        Color NormalBg = Color { 100, 100, 98, 255 };
+        Color NormalBg = Color { 80, 80, 76, 255 };
         Color HoverBg = Color { 120, 120, 117, 255 };
-        Color SelectedBg = GRAY;
+        Color SelectedBg = Color { 100, 100, 97, 255 };;
 
         Color NormalFg = WHITE;
         Color HoverFg = WHITE;

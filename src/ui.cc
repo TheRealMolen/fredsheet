@@ -22,8 +22,8 @@ namespace ui
 
     const ControlStyle kDefaultControlStyle;
     const ControlStyle kNullControlStyle = { .DrawBg = 0 };
-    const ControlStyle kBtnControlStyle = { .DrawBg = 0, .NormalFg = Color {220, 220, 220, 255}, .HoverFg = YELLOW, .Padding { 2.f } };
-    const ControlStyle kTightControlStyle = { .Padding { 1.f } };
+    const ControlStyle kBtnControlStyle = { .DrawBg = 0, .NormalFg = Color {200, 200, 190, 255}, .HoverFg = WHITE, .Padding { 2.f } };
+    const ControlStyle kTightControlStyle = { .NormalBg = Color { 100, 100, 97, 255 }, .Padding { 1.f } };
     
     ControlPtr gRootControl;
 

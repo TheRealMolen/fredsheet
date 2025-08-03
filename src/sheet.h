@@ -16,6 +16,48 @@ namespace ui {
 
 // --------------------------------------------------------------------------------
 
+enum class EFredFileType : u8
+{
+    Invalid, 
+
+    DocumentMeta,
+    TableCsv,
+};
+
+struct FredFileEntry
+{
+    std::string Filename;
+    std::string Contents;
+
+    EFredFileType FileType;
+
+    FredFileEntry() = delete;
+    FredFileEntry(std::string&& filename, std::string&& contents);
+};
+
+struct FredDocFile
+{
+    std::string Filename;
+
+    std::vector<FredFileEntry> Subfiles;
+
+
+    FredDocFile();
+    FredDocFile(const std::string& filename) : Filename(filename) { /**/ }
+};
+using FredDocFilePtr = std::unique_ptr<FredDocFile>;
+
+
+struct FredDoc
+{
+    FredDocFilePtr SourceData;
+
+    std::vector<struct GridSheet> Sheets;
+};
+using FredDocPtr = std::shared_ptr<FredDoc>;
+
+// --------------------------------------------------------------------------------
+
 struct GridSheet
 {
     using StringList = std::vector<std::string>;
@@ -68,7 +110,8 @@ struct CellIndex
 GridSheetPtr CreateNewSheet();
 GridSheetUIPtr InitSheetUI(const GridSheetPtr& sheetP, ui::ControlPtr& parentCtrlP);
 
-GridSheetPtr ChooseAndOpenSheet();
+std::string ChooseFredFileToOpen();
+FredDocPtr OpenFredDoc(const std::string& filename);
 
 void AddRows(GridSheet& sheet, int numRowsToAdd);
 

@@ -21,7 +21,11 @@
 
 void OnToolbarOpenClicked(ui::ControlPtr& ctrlP, const Vector2& mousePos)
 {
-    ChooseAndOpenSheet();
+    std::string filename = ChooseFredFileToOpen();
+    if (filename.empty())
+        return;
+
+    FredDocPtr docP = OpenFredDoc(filename);
 }
 
 void OnToolbarBtnClicked(ui::ControlPtr& ctrlP, const Vector2& mousePos)
@@ -86,7 +90,7 @@ ui::ControlPtr createTopLevelControls(ui::ControlPtr& parentP)
 }
 
 
-int guardedMain()
+int guardedMain(int argc, const char** argv)
 {
     const int screenWidth = 1600;
     const int screenHeight = 1024;
@@ -99,6 +103,12 @@ int guardedMain()
     rootCtrl->Style = &kRootControlStyle;
 
     ui::ControlPtr editorCtrl = createTopLevelControls(rootCtrl);
+
+    if (argc > 1)
+    {
+        const std::string filename(argv[1]);
+        FredDocPtr docP = OpenFredDoc(filename);
+    }
 
     GridSheetPtr gridSheet = CreateNewSheet();
     GridSheetUIPtr gridSheetUI = InitSheetUI(gridSheet, editorCtrl);
@@ -153,7 +163,7 @@ int main(int argc, const char** argv)
     int returnCode = 0;
     try
     {
-        returnCode = guardedMain();
+        returnCode = guardedMain(argc, argv);
     }
     catch(std::string& s)
     {

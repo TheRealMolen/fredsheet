@@ -61,10 +61,10 @@
 				<BuildWorkingDirectory></BuildWorkingDirectory>
 				<CancelBuild></CancelBuild>
 				<Exe>zig-out\bin\fred.exe</Exe>
-				<Args></Args>
-				<WorkingDirectory></WorkingDirectory>
-				<DebugCommand>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebugCommand>
-				<DebuggerExe>C:\Users\alexm\AppData\Roaming\itch\apps\remedybg\remedybg.exe</DebuggerExe>
+				<Args>C:\Users\alexm\OneDrive\Documents\git\fredsheet\test-data\core.fred</Args>
+				<WorkingDirectory>C:\Users\alexm\OneDrive\Documents\git\fredsheet</WorkingDirectory>
+				<DebugCommand>zig-out\bin\fred.exe</DebugCommand>
+				<DebuggerExe></DebuggerExe>
 				<DebugSln></DebugSln>
 				<Defines></Defines>
 				<ForceIncludes></ForceIncludes>

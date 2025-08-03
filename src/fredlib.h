@@ -4,6 +4,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <string_view>
 
 using u8 = uint8_t;
 using u32 = uint32_t;
