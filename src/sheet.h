@@ -68,6 +68,8 @@ struct CellIndex
 GridSheetPtr CreateNewSheet();
 GridSheetUIPtr InitSheetUI(const GridSheetPtr& sheetP, ui::ControlPtr& parentCtrlP);
 
+GridSheetPtr ChooseAndOpenSheet();
+
 void AddRows(GridSheet& sheet, int numRowsToAdd);
 
 // --------------------------------------------------------------------------------

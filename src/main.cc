@@ -19,6 +19,11 @@
 
 // --------------------------------------------------------------------------------
 
+void OnToolbarOpenClicked(ui::ControlPtr& ctrlP, const Vector2& mousePos)
+{
+    ChooseAndOpenSheet();
+}
+
 void OnToolbarBtnClicked(ui::ControlPtr& ctrlP, const Vector2& mousePos)
 {
     ui::ControlState* ctrl = ctrlP.get();
@@ -48,19 +53,21 @@ ui::ControlPtr createTopLevelControls(ui::ControlPtr& parentP)
         hb_toolbar->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::HorizBox, .Padding = 2.f };
         ui::AddChild(vb_toplevel, hb_toolbar);
 
-        ui::ControlHandlerPtr toolbar_handler = make_shared<ui::ControlHandler>();
-        toolbar_handler->OnClick = OnToolbarBtnClicked;
-        auto addToolbarBtn = [ & ](const char* dbgName, int locU, int locV)
+        auto addToolbarBtn = [ & ](const char* dbgName, int locU, int locV, auto onclick)
         {
             ui::ControlPtr btn = make_shared<ui::ControlState>(dbgName);
             btn->Style = &ui::kBtnControlStyle;
             btn->Icon = { .Atlas = iconAtlas, .Location = { float(locU), float(locV) } };
+            
+            ui::ControlHandlerPtr toolbar_handler = make_shared<ui::ControlHandler>();
+            toolbar_handler->OnClick = onclick;
             btn->Handlers = toolbar_handler;
+
             ui::AddChild(hb_toolbar, btn);
         };
-        addToolbarBtn("Toolbar_New", 0, 0);
-        addToolbarBtn("Toolbar_Open", 1, 0);
-        addToolbarBtn("Toolbar_Save", 2, 0);
+        addToolbarBtn("Toolbar_New", 0, 0, OnToolbarBtnClicked);
+        addToolbarBtn("Toolbar_Open", 1, 0, OnToolbarOpenClicked);
+        addToolbarBtn("Toolbar_Save", 2, 0, OnToolbarBtnClicked);
     }
 
     ui::RefreshControlLayout(parentP);

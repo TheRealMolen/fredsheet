@@ -47,6 +47,11 @@ pub fn build(b: *std.Build) !void {
     exe.addIncludePath(b.path("src"));
     exe.linkLibC();
     exe.linkLibCpp();
+
+    // todo: non-windows platforms
+    exe.addLibraryPath(std.Build.LazyPath{.cwd_relative="C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.22000.0\\um\\x64"});
+    exe.linkSystemLibrary("comdlg32");
+
     exe.linkLibrary(raylib_art);
 
 

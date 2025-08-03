@@ -2,9 +2,50 @@
   fredsheet
  ===========
 
-_...probably nothing..._
+_what if there was a tiny spreadsheet program that just worked for 80% of quick cases?_
 
 
+## DESIGN GOALS
+
+### fast, small, standalone
+* < 100ms for all common operations
+* < 5MB distro zip size
+* minimal external dependencies beyond OS & gfx drivers
+* no install needed
+
+### focused on non-enterprise use cases
+* excel has that wrapped up & locked in anyway
+* openoffice calc is daunting and heavyweight
+* numbers is only on apple things and a bit of a departure from sheet-based workflows
+* "i just want to..."
+    * manage household finances
+    * open a csv file
+    * explore & graph some data
+        -> this might need limited .ods and .xlsx import to really be satisfied. that's probably fine.
+
+### simple file storage
+* `budget.fred` is a folder of mostly CSV files
+    * `tableN.csv` -- the user-facing values of the data for one table of data (aka sheet)
+    * `tableN_source.csv` -- the backing data for the table in machine-friendly stable format
+    * `tableN_meta.json` -- styles, chart info etc for the table in question
+    * `chartN.png` -- a rendered copy of the nth chart in the document
+    * `doc.json` -- describes how the "document" should be assmebled from the various sources
+* expectation is that opening a `.csv` file is equivalent to opening a `.fred` with the input file as `table1.csv`
+* `.fred` data can be loaded from a zipped file or a folder transparently to ease integration with other scripts tools
+
+
+### nice-to-have features
+* easy integration with eg. jupyter / R for nice data analysis & exploration workflows
+* basic .ods / .xlsx import
+* printing
+
+
+OUT OF SCOPE
+------------
+* excel compatibility besides what's trivially available (CSV export/import)
+* macros
+* OLE
+* complex pivot table setups
 
 
 UI LIB ASSUMPTIONS

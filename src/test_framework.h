@@ -2,11 +2,7 @@
 
 #include "debug/assert.h"
 
-// hide conflicts btw names in raylib and win32 api included by doctest
-#if defined(_WIN32)           
-#define NOGDI             // All GDI defines and routines
-#define NOUSER            // All USER defines and routines
-#endif
+#include "fredplatform.h"
 
 #define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 #include "doctest.h"

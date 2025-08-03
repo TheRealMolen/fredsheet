@@ -2,15 +2,8 @@
 
 #include "helper/cpp.h"
 
-// hide conflicts btw names in raylib and win32 api
-#if defined(_WIN32)           
-#define NOGDI             // All GDI defines and routines
-#define NOUSER            // All USER defines and routines
-#endif
+#include "fredplatform.h"
 
-#define VC_EXTRALEAN
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <debugapi.h>
 
 //-------------------------------------------------------------------------------------------------------------
