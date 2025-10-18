@@ -1,25 +1,26 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const raylib_dep = b.dependency("raylib", .{
+    const raylib_dep = b.dependency("raylib_zig", .{
         .target = target,
         .optimize = optimize,
     });
     const raylib_art = raylib_dep.artifact("raylib");
 
-    const exe = b.addExecutable(.{
-        .name = "fred",
-        .target = target,
-        .optimize = optimize,
+    const exe = b.addExecutable(.{ .name = "fred",
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
+        .use_lld = false,
     });
 
     // find all our source files
-    var cppFiles = std.ArrayList([]const u8).init(b.allocator);
+    var cppFiles = std.array_list.Managed([]const u8).init(b.allocator);
     {
         var dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
 
@@ -49,11 +50,12 @@ pub fn build(b: *std.Build) !void {
     exe.linkLibCpp();
 
     // todo: non-windows platforms
-    exe.addLibraryPath(std.Build.LazyPath{.cwd_relative="C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.22000.0\\um\\x64"});
-    exe.linkSystemLibrary("comdlg32");
+    if (builtin.target.os.tag == .windows) {
+        exe.addLibraryPath(std.Build.LazyPath{ .cwd_relative = "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.22000.0\\um\\x64" });
+        exe.linkSystemLibrary("comdlg32");
+    }
 
     exe.linkLibrary(raylib_art);
-
 
     const install_cmd = b.addInstallArtifact(exe, .{});
     b.getInstallStep().dependOn(&install_cmd.step);

@@ -10,6 +10,27 @@
 
 // --------------------------------------------------------------------------------
 
+#ifndef _WIN32
+// based on https://stackoverflow.com/a/66514731
+#include <unistd.h>
+
+size_t filelength(int fp)
+{
+    off_t currPos = lseek(fp, 0, SEEK_CUR);
+    if (currPos == off_t(-1))
+    {
+        assert(false); // it's undefined to call filelength on a file that's being read
+        return size_t(0);
+    }
+    
+    off_t size = lseek(fp, 0, SEEK_END);
+    lseek(fp, 0, SEEK_SET);
+    return size_t(size);
+}
+#endif
+
+// --------------------------------------------------------------------------------
+
 class OSFileHandle
 {
     NON_COPYABLE(OSFileHandle);

@@ -51,7 +51,7 @@ ui::ControlPtr createTopLevelControls(ui::ControlPtr& parentP)
     ui::AddChild(parentP, vb_toplevel);
 
     { // toolbar
-        ui::IconAtlasPtr iconAtlas = ui::LoadIconAtlas("data\\icons.png", 32.f);
+        ui::IconAtlasPtr iconAtlas = ui::LoadIconAtlas("data/icons.png", 32.f);
 
         ui::ControlPtr hb_toolbar = make_shared<ui::ControlState>("HB_ToolBar");
         hb_toolbar->LayoutParams = ui::Layout_Params { .Algo = ui::ELayoutAlgo::HorizBox, .Padding = 2.f };

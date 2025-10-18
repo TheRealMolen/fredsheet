@@ -4,8 +4,12 @@
 
 #include "fredplatform.h"
 
+#ifdef _WIN32
 #include <debugapi.h>
+#endif
+#include <signal.h>
 
+//-------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------
 
 #ifdef NDEBUG
@@ -31,6 +35,20 @@
 #include <cstdio>
 #include <format>
 
+
+//-------------------------------------------------------------------------------------------------------------
+
+#ifndef _WIN32
+inline void __debugbreak()
+{
+    raise(SIGTRAP);
+}
+inline void OutputDebugString(const char* str)
+{
+    puts(str);
+}
+#define OutputDebugStringA OutputDebugString
+#endif
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -93,9 +111,11 @@ inline void HandleAssertFiring(const char* file, int line, const char* expr, con
     switch (g_assertMode)
     {
     case BreakIfDebuggerAttached:
+#ifdef _WIN32
         if (IsDebuggerPresent())
             __debugbreak();
         else
+#endif
             throw AssertException(file, line, expr);
         break;
 

@@ -1,11 +1,12 @@
 .{
-    .name = "fredsheet",
+    .name = .fredsheet,
     .version = "0.0.1",
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.2",
+    .fingerprint = 0x2cf0329cfe6130c6,
     .dependencies = .{
-        .raylib = .{
-            .url = "https://github.com/raysan5/raylib/archive/75b6b825dfc93488bc411c00845164b5c0f8fae6.zip",
-            .hash = "1220cf98ad05d672d1342510ae77b35ee5e222cde2c5134a14774d7cb35409283c44",
+        .raylib_zig = .{
+            .url = "git+https://github.com/raylib-zig/raylib-zig?ref=devel#163b1ef2e993fe7cc7c76bb3213d98612f4b7676",
+            .hash = "raylib_zig-5.6.0-dev-KE8REGNJBQDSjjyCmf4ATVQtk_OaBpY0B7kBxwSOPEGZ",
         },
     },
     .paths = .{

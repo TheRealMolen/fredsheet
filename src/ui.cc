@@ -35,7 +35,7 @@ namespace ui
 
     void LoadUIFont()
     {
-        gCoreFont = LoadFontEx("data\\fonts\\montserrat\\Montserrat-Light.ttf", gUiFontSize, nullptr, 0);
+        gCoreFont = LoadFontEx("data/fonts/montserrat/Montserrat-Light.ttf", gUiFontSize, nullptr, 0);
     }
 
     void DrawUIText(const char* textUtf8, const Vector2& pos, const Color& col)

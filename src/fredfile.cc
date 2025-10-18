@@ -42,7 +42,7 @@ FredFileEntry::FredFileEntry(std::string&& filename, std::string&& contents)
 std::string ChooseFredFileToOpen()
 {
     // TODO: non-win32 ----------------
-
+#ifdef _WIN32
     OPENFILENAME ofn;
     char filenameBuf[260];
 
@@ -76,6 +76,7 @@ std::string ChooseFredFileToOpen()
 
         return filename;
     }
+#endif
 
     return {};
 }

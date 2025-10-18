@@ -1,7 +1,10 @@
 #include "assert.h"
 
 #include "test_framework.h"
+
+#ifdef _WIN32
 #include <crtdbg.h>
+#endif
 
 #ifndef NDEBUG
 
